@@ -128,19 +128,34 @@ export function clearPauseRequest(): void {
 
 // Signal handlers for graceful shutdown
 export function setupSignalHandlers(stateManager: StateManager): void {
-  const handleSignal = (signal: string) => {
+  const handleSignal = async (signal: string) => {
     console.log(`\n📡 Received ${signal}, saving state and pausing...`);
     requestPause();
+    
+    // Actually save the current state before exiting
+    try {
+      const currentState = stateManager.getCurrentState();
+      if (currentState) {
+        await stateManager.saveState(currentState);
+        console.log("✅ State saved successfully.");
+      }
+    } catch (error) {
+      console.error("❌ Failed to save state:", error);
+    }
     
     // Give some time for graceful shutdown
     setTimeout(() => {
       console.log("⏸️  Process paused. Run with --resume to continue.");
       process.exit(0);
-    }, 2000);
+    }, 1000);
   };
 
-  process.on("SIGINT", () => handleSignal("SIGINT (Ctrl+C)"));
-  process.on("SIGTERM", () => handleSignal("SIGTERM"));
+  process.on("SIGINT", () => {
+    handleSignal("SIGINT (Ctrl+C)").catch(console.error);
+  });
+  process.on("SIGTERM", () => {
+    handleSignal("SIGTERM").catch(console.error);
+  });
   
   // Handle uncaught exceptions and network errors
   process.on("uncaughtException", (error) => {
