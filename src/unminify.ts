@@ -3,6 +3,7 @@ import { ensureFileExists } from "./file-utils.js";
 import { webcrack } from "./plugins/webcrack.js";
 import { verbose } from "./verbose.js";
 import { StateManager, ProcessingState, isPauseRequested, setupSignalHandlers } from "./state-manager.js";
+import { showFileProgress } from "./progress.js";
 
 export async function unminify(
   filename: string,
@@ -69,7 +70,7 @@ export async function unminify(
       return;
     }
 
-    console.log(`Processing file ${i + 1}/${extractedFiles.length}: ${extractedFiles[i].path}`);
+    showFileProgress(i + 1, extractedFiles.length, extractedFiles[i].path, "Processing file");
 
     const file = extractedFiles[i];
     

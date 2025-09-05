@@ -22,16 +22,31 @@ function formatBytes(numBytes: number) {
   return `${numBytes.toFixed(2)} ${units[unitIndex]}`;
 }
 
-export function showPercentage(percentage: number) {
+export function showPercentage(percentage: number, currentTask?: string) {
   const percentageStr = Math.round(percentage * 100);
+  const taskInfo = currentTask ? ` - ${currentTask}` : '';
+  
   if (!verbose.enabled) {
     process.stdout.clearLine?.(0);
     process.stdout.cursorTo(0);
-    process.stdout.write(`Processing: ${percentageStr}%`);
+    process.stdout.write(`🔄 Processing: ${percentageStr}%${taskInfo}`);
   } else {
-    verbose.log(`Processing: ${percentageStr}%`);
+    verbose.log(`Processing: ${percentageStr}%${taskInfo}`);
   }
   if (percentage === 1) {
     process.stdout.write("\n");
+  }
+}
+
+export function showFileProgress(currentFile: number, totalFiles: number, fileName: string, task: string = "Processing") {
+  const percentage = Math.round((currentFile / totalFiles) * 100);
+  const fileInfo = fileName.length > 30 ? `...${fileName.slice(-27)}` : fileName;
+  
+  if (!verbose.enabled) {
+    process.stdout.clearLine?.(0);
+    process.stdout.cursorTo(0);
+    process.stdout.write(`📁 ${task}: ${currentFile}/${totalFiles} (${percentage}%) - ${fileInfo}`);
+  } else {
+    verbose.log(`${task}: ${currentFile}/${totalFiles} (${percentage}%) - ${fileInfo}`);
   }
 }

@@ -63,7 +63,7 @@ export async function visitAllIdentifiers(
       }
       markVisited(smallestScope, smallestScopeNode.name, visited);
 
-      onProgress?.(visited.size / numRenamesExpected);
+      onProgress?.(visited.size / numRenamesExpected, `Renamed: ${smallestScopeNode.name}`);
     } catch (error) {
       // Check if it's a network error and should pause
       if (error instanceof Error && (
@@ -78,10 +78,10 @@ export async function visitAllIdentifiers(
       console.warn(`⚠️  Failed to rename '${smallestScopeNode.name}': ${error.message}`);
       // Mark as visited even if renaming failed to avoid infinite loops
       markVisited(smallestScope, smallestScopeNode.name, visited);
-      onProgress?.(visited.size / numRenamesExpected);
+      onProgress?.(visited.size / numRenamesExpected, `Failed: ${smallestScopeNode.name}`);
     }
   }
-  onProgress?.(1);
+  onProgress?.(1, "✅ Complete");
 
   const stringified = await transformFromAstAsync(ast);
   if (stringified?.code == null) {
