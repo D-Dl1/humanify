@@ -42,40 +42,31 @@ export function openaiRename({
   };
 }
 
-function toRenamePrompt(
-  name: string,
-  surroundingCode: string,
-  model: string
-): OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming {
+function toRenamePrompt(name, surroundingCode, model) {
   return {
     model,
     messages: [
       {
         role: "system",
-        content: `Rename Javascript variables/function \`${name}\` to have descriptive name based on their usage in the code."`
+        content:
+`You rename a JavaScript identifier based on its usage.
+
+Return only json as a single JSON object:
+{"new_name":"<camelCase>","newName":"<camelCase>","name":"<camelCase>","reason":"<short why>"}.
+
+No markdown, no code fences, no extra text. Reply with json only.`
       },
       {
         role: "user",
-        content: surroundingCode
+        content:
+`Identifier to rename: ${name}
+
+Code context:
+${surroundingCode}
+
+Reply only with json.`
       }
     ],
-    response_format: {
-      type: "json_schema",
-      json_schema: {
-        strict: true,
-        name: "rename",
-        schema: {
-          type: "object",
-          properties: {
-            newName: {
-              type: "string",
-              description: `The new name for the variable/function called \`${name}\``
-            }
-          },
-          required: ["newName"],
-          additionalProperties: false
-        }
-      }
-    }
+    response_format: { type: "json_object" }
   };
 }
