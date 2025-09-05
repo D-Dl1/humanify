@@ -30,7 +30,7 @@ export function openaiRename({
         if (!result) {
           throw new Error("Failed to rename", { cause: response });
         }
-        const renamed = JSON.parse(result).newName;
+        const renamed = JSON.parse(result).new_name;
 
         verbose.log(`Renamed to ${renamed}`);
 
@@ -52,30 +52,24 @@ function toRenamePrompt(
     messages: [
       {
         role: "system",
-        content: `Rename Javascript variables/function \`${name}\` to have descriptive name based on their usage in the code."`
+        content:
+          // 关键点：明确要求只输出 json，对返回结构定死键名
+          `You rename a JavaScript identifier based on its usage.
+Return only json as a single JSON object: {"new_name":"<camelCaseName>","reason":"<short why>"}.
+No markdown, no code fences, no extra text.`
       },
       {
         role: "user",
-        content: surroundingCode
+        content:
+          `Identifier to rename: ${name}
+
+Code context:
+${surroundingCode}
+
+Reply only with json.`
       }
     ],
-    response_format: {
-      type: "json_schema",
-      json_schema: {
-        strict: true,
-        name: "rename",
-        schema: {
-          type: "object",
-          properties: {
-            newName: {
-              type: "string",
-              description: `The new name for the variable/function called \`${name}\``
-            }
-          },
-          required: ["newName"],
-          additionalProperties: false
-        }
-      }
-    }
+    // 关键点：保持 json_object
+    response_format: { type: "json_object" }
   };
 }
