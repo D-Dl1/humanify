@@ -13,6 +13,7 @@ v2 highlights compared to v1:
 * Python not required anymore!
 * A lot of tests, the codebase is actually maintanable now
 * Renewed CLI tool `humanify` installable via npm
+* **NEW**: Pause and resume functionality - never lose progress again! 🔄
 
 ### ➡️ Check out the [introduction blog post][blogpost] for in-depth explanation!
 
@@ -59,6 +60,29 @@ un-minify using ChatGPT.
 
 Using `humanify local` is of course free, but may take more time, be less
 accurate and not possible with your existing hardware.
+
+## 🔄 Pause and Resume Feature
+
+Never lose progress again! HumanifyJS now supports pausing and resuming your work:
+
+- **Auto-pause on network errors** - automatically saves state when connection fails
+- **Manual pause with Ctrl+C** - gracefully stops and saves progress
+- **Resume from where you left off** - use `--resume` flag to continue
+- **Status checking** - use `humanify status` to see current progress
+- **Manual pause command** - use `humanify pause` to stop running processes
+
+```shell
+# Start processing
+humanify openai large-bundle.js
+
+# If interrupted, resume with:
+humanify openai large-bundle.js --resume
+
+# Check status anytime
+humanify status
+```
+
+📖 **For detailed usage guide, see [PAUSE_RESUME_GUIDE.md](./PAUSE_RESUME_GUIDE.md)**
 
 ## Getting started
 

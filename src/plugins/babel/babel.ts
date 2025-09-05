@@ -69,7 +69,7 @@ const makeNumbersLonger: PluginItem = {
   }
 };
 
-export default async (code: string): Promise<string> =>
+export default async (code: string, stateManager?: any): Promise<string> =>
   transformWithPlugins(code, [
     convertVoidToUndefined,
     flipComparisonsTheRightWayAround,

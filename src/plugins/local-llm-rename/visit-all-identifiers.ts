@@ -1,6 +1,7 @@
 import { parseAsync, transformFromAstAsync, NodePath } from "@babel/core";
 import * as babelTraverse from "@babel/traverse";
 import { Identifier, toIdentifier, Node } from "@babel/types";
+import { isPauseRequested } from "../../state-manager.js";
 
 const traverse: typeof babelTraverse.default.default = (
   typeof babelTraverse.default === "function"
@@ -28,6 +29,12 @@ export async function visitAllIdentifiers(
   const numRenamesExpected = scopes.length;
 
   for (const smallestScope of scopes) {
+    // Check for pause request before processing each identifier
+    if (isPauseRequested()) {
+      console.log("\n⏸️  Pause requested, stopping identifier processing...");
+      break;
+    }
+
     if (hasVisited(smallestScope, visited)) continue;
 
     const smallestScopeNode = smallestScope.node;
@@ -39,22 +46,40 @@ export async function visitAllIdentifiers(
       smallestScope,
       contextWindowSize
     );
-    const renamed = await visitor(smallestScopeNode.name, surroundingCode);
-    if (renamed !== smallestScopeNode.name) {
-      let safeRenamed = toIdentifier(renamed);
-      while (
-        renames.has(safeRenamed) ||
-        smallestScope.scope.hasBinding(safeRenamed)
-      ) {
-        safeRenamed = `_${safeRenamed}`;
+
+    try {
+      const renamed = await visitor(smallestScopeNode.name, surroundingCode);
+      if (renamed !== smallestScopeNode.name) {
+        let safeRenamed = toIdentifier(renamed);
+        while (
+          renames.has(safeRenamed) ||
+          smallestScope.scope.hasBinding(safeRenamed)
+        ) {
+          safeRenamed = `_${safeRenamed}`;
+        }
+        renames.add(safeRenamed);
+
+        smallestScope.scope.rename(smallestScopeNode.name, safeRenamed);
       }
-      renames.add(safeRenamed);
+      markVisited(smallestScope, smallestScopeNode.name, visited);
 
-      smallestScope.scope.rename(smallestScopeNode.name, safeRenamed);
+      onProgress?.(visited.size / numRenamesExpected);
+    } catch (error) {
+      // Check if it's a network error and should pause
+      if (error instanceof Error && (
+        error.message.includes("ENOTFOUND") || 
+        error.message.includes("ECONNREFUSED") ||
+        error.message.includes("fetch failed")
+      )) {
+        console.log(`\n🌐 Network error while processing '${smallestScopeNode.name}': ${error.message}`);
+        throw error; // Re-throw to be handled by the calling function
+      }
+      
+      console.warn(`⚠️  Failed to rename '${smallestScopeNode.name}': ${error.message}`);
+      // Mark as visited even if renaming failed to avoid infinite loops
+      markVisited(smallestScope, smallestScopeNode.name, visited);
+      onProgress?.(visited.size / numRenamesExpected);
     }
-    markVisited(smallestScope, smallestScopeNode.name, visited);
-
-    onProgress?.(visited.size / numRenamesExpected);
   }
   onProgress?.(1);
 
