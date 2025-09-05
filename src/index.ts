@@ -5,6 +5,7 @@ import { local } from "./commands/local.js";
 import { openai } from "./commands/openai.js";
 import { cli } from "./cli.js";
 import { azure } from "./commands/gemini.js";
+import { pause, status } from "./commands/pause.js";
 
 cli()
   .name("humanify")
@@ -14,4 +15,6 @@ cli()
   .addCommand(openai)
   .addCommand(azure)
   .addCommand(download())
+  .addCommand(pause)
+  .addCommand(status)
   .parse(process.argv);

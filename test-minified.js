@@ -1,0 +1,1 @@
+function a(b,c){var d=b+c;return d*2}function e(f){if(f>10){return f*2}else{return f/2}}var g=function(h,i){var j=h*i;return j+10};console.log(a(5,3));console.log(e(15));console.log(g(4,6));

@@ -16,7 +16,7 @@ export function openaiRename({
 }) {
   const client = new OpenAI({ apiKey, baseURL });
 
-  return async (code: string): Promise<string> => {
+  return async (code: string, stateManager?: any): Promise<string> => {
     return await visitAllIdentifiers(
       code,
       async (name, surroundingCode) => {

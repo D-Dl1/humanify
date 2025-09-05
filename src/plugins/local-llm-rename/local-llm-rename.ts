@@ -7,7 +7,7 @@ import { visitAllIdentifiers } from "./visit-all-identifiers.js";
 const PADDING_CHARS = 200;
 
 export const localReanme = (prompt: Prompt, contextWindowSize: number) => {
-  return async (code: string): Promise<string> => {
+  return async (code: string, stateManager?: any): Promise<string> => {
     const filename = await defineFilename(
       prompt,
       code.slice(0, PADDING_CHARS * 2)
