@@ -30,7 +30,7 @@ export function openaiRename({
         if (!result) {
           throw new Error("Failed to rename", { cause: response });
         }
-        const renamed = JSON.parse(result).new_name;
+        const renamed = JSON.parse(result).newName;
 
         verbose.log(`Renamed to ${renamed}`);
 
@@ -53,9 +53,9 @@ function toRenamePrompt(
       {
         role: "system",
         content:
-          // 关键点：明确要求只输出 json，对返回结构定死键名
+          // 关键点：明确要求只输出 json，对返回结构定死键名，保持原有的newName字段
           `You rename a JavaScript identifier based on its usage.
-Return only json as a single JSON object: {"new_name":"<camelCaseName>","reason":"<short why>"}.
+Return only json as a single JSON object: {"newName":"<camelCaseName>","reason":"<short why>"}.
 No markdown, no code fences, no extra text.`
       },
       {
@@ -69,7 +69,7 @@ ${surroundingCode}
 Reply only with json.`
       }
     ],
-    // 关键点：保持 json_object
+    // 关键点：使用 json_object 支持 DeepSeek API
     response_format: { type: "json_object" }
   };
 }
